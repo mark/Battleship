@@ -8,29 +8,24 @@ class Board
   def tile_create # list of coordinates
     @size.times do |row|
       @size.times do |column|
-        has_ship = @fleet.any? { |ship| ship.anchored?([row, column]) }
+        ship = @fleet.detect { |ship| ship.anchored?([row, column]) }
         
-        @tiles << Tile.new(row, column, has_ship)
+        @tiles << Tile.new(row, column, ship)
       end
     end
   end
   
   def ship_create # list of coordinates
     @fleet = [
-      Ship.new([0, 0], :right, 2),
-      Ship.new([3, 0], :right, 5),
-      Ship.new([5, 5], :down,  4)
+      Ship.new("Destroyer", [0, 0], :right, 2),
+      Ship.new("Aircraft Carrier", [3, 0], :right, 5),
+      # Ship.new("Battleship", [5, 5], :down,  4)
     ]
     
     # Keep an array of all tiles in all ships:
     # For each ship in the fleet:
     #  take its coords
     #  add its coords to our tiles array
-    @all_ship_coordinates = []
-    
-    @fleet.each do |ship|
-      @all_ship_coordinates += ship.coords
-    end
     
     # p "Original ship tiles: #{ @all_ship_coordinates }"
   end
@@ -38,7 +33,16 @@ class Board
   def draw
     #for each tile
     #print marker
+    print '  | '
+    @size.times do |column|
+      print (column+1).to_s.ljust(2)
+    end
+    puts
+    
+    puts '--+' + '-' * 20
+    
     @size.times do |row|
+      print Tile::ROWS[row] + ' | '
       @size.times do |column|
         print @tiles[column * @size + row].marker + ' '
       end
@@ -46,11 +50,10 @@ class Board
     end
   end
   
-  def fire(row, column)
-    @tiles[column * @size + row].called #finds the tile and called it  
+  def fire(tile)
+    tile.called #finds the tile and called it  
     
     # if hit ship tile, remove from @all_ship_tiles array
-    @all_ship_coordinates.delete([column,row])
     
     # p "Remaining ship tiles: #{ @all_ship_coordinates }"
     # p "Remaining ship tiles: " + @all_ship_coordinates.to_s
@@ -59,12 +62,13 @@ class Board
   def game_over?
     # 1: goal of the game is completed
     #  when all ship tiles are hit (o)
-    # return true if @all_ship_tiles is empty
-    return true if @all_ship_coordinates.empty?
-    
-    # 2: person wants to quit
-    
-    false
+    @fleet.all? &:sunk?
   end  
+  
+  def tile(coords)
+    row, column = Tile.split_coords(coords)
+    
+    @tiles[column * @size + row] if row && column
+  end
   
 end

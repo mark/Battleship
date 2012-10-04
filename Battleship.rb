@@ -9,15 +9,22 @@ new_game.tile_create
 new_game.draw
 
 until new_game.game_over?
-  print 'Select a row(0-9): '
-  row = gets.chomp  
-  break if row.downcase == "quit"  
-  
-  print 'Select a column(0-9): '
-  column = gets.chomp
-  break if column.downcase == "quit"
+  print 'Select a coordinate (A1..J10): '
+  coord = gets.chomp
+  break if coord.downcase == "quit"
 
-  new_game.fire(row.to_i, column.to_i)
-  new_game.draw
+  tile = new_game.tile(coord)
+  
+  if tile
+    if tile.called?
+      puts "You've already fired there!"
+    else
+      new_game.fire(tile)
+      print "\e[H\e[2J"
+      new_game.draw
+    end
+  else
+    puts "That's not a valid coordinate!"
+  end
 end
 

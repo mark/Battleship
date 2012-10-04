@@ -7,24 +7,15 @@ class Ship
 # ship starting at (x,y), next tile @ (x+1, y), next (x+2, y)
 #(x+3, y), (x+4, y)
 
-  def initialize(start_coord, direction, ship_length)
+  DELTAS = { :up => [0, -1], :down => [0, 1], :left => [-1, 0], :right => [1, 0] }
+  
+  def initialize(name, start_coord, direction, ship_length)
+    @name = name
     @start_coord = start_coord
     @coords = []
-    
-    x_incrementer = 0
-    y_incrementer = 0
+        
+    x_incrementer, y_incrementer = DELTAS[ direction ]
 
-    case direction
-    when :right
-      x_incrementer = 1
-    when :left
-      x_incrementer = -1
-    when :up
-      y_incrementer = -1
-    when :down
-      y_incrementer = 1
-    end
-    
     ship_length.times do |i|
 
       x = @start_coord[0] + (x_incrementer * i)
@@ -36,6 +27,22 @@ class Ship
   
   def anchored?(coord)
     @coords.include?(coord)
+  end
+  
+  def symbol
+    @name[0,1]
+  end
+  
+  def called(x, y)
+    @coords.delete [x,y]
+
+    if sunk?
+      `say 'You sank my #{@name}'`
+    end
+  end
+
+  def sunk?
+    @coords.empty?
   end
   
 end
